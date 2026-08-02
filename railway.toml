@@ -1,0 +1,12 @@
+[build]
+  builder = "NIXPACKS"
+  buildCommand = "cd client/admin && npm install && npm run build && cd ../.. && npm install"
+
+[deploy]
+  startCommand = "npm start"
+  healthcheckPath = "/health"
+  healthcheckTimeout = 30
+
+[service]
+  name = "victory-predict"
+  port = 3000

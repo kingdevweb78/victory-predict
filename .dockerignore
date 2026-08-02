@@ -1,0 +1,10 @@
+node_modules
+.git
+.env
+.DS_Store
+*.log
+uploads/*
+!uploads/.gitkeep
+backups/*
+!backups/.gitkeep
+session/
