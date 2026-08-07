@@ -7,8 +7,7 @@ const Group = require('../models/Group');
 const Log = require('../models/Log');
 const { protect, adminOnly } = require('../middleware/auth');
 
-router.use(protect);
-router.use(adminOnly);
+router.use(protect); router.use(adminOnly);
 
 router.get('/dashboard', async (req, res) => {
   try {
@@ -21,7 +20,9 @@ router.get('/dashboard', async (req, res) => {
     const revenue = await Payment.aggregate([{ $match: { status: 'approved', createdAt: { $gte: thirtyAgo } } }, { $group: { _id: null, total: { $sum: '$amount' } } }]);
     const recentPayments = await Payment.find({ status: 'approved' }).sort({ createdAt: -1 }).limit(5).populate('userId', 'name whatsappId');
     const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5).select('-adminPassword');
-    res.json({ success: true, dashboard: { totalUsers, vipUsers, freeUsers, totalPayments, pendingPayments, totalPredictions, totalGroups, revenue: revenue[0]?.total || 0, recentPayments, recentUsers } });
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayPredictions = await Prediction.countDocuments({ createdAt: { $gte: today } });
+    res.json({ success: true, dashboard: { totalUsers, vipUsers, freeUsers, totalPayments, pendingPayments, totalPredictions, todayPredictions, totalGroups, revenue: revenue[0] ? revenue[0].total : 0, recentPayments, recentUsers } });
   } catch (e) { res.status(500).json({ success: false }); }
 });
 
@@ -40,6 +41,26 @@ router.get('/analytics', async (req, res) => {
 
 router.get('/logs', async (req, res) => {
   try { const logs = await Log.find().sort({ createdAt: -1 }).limit(100); res.json({ success: true, logs }); } catch (e) { res.status(500).json({ success: false }); }
+});
+
+router.get('/search', async (req, res) => {
+  try {
+    const { q, type = 'all' } = req.query;
+    if (!q) return res.json({ success: true, results: {} });
+    const results = {}; const regex = new RegExp(q, 'i');
+    if (type === 'all' || type === 'users') results.users = await User.find({ $or: [{ name: regex }, { whatsappId: regex }] }).select('-adminPassword').limit(20);
+    if (type === 'all' || type === 'payments') results.payments = await Payment.find({ plan: regex }).populate('userId', 'name whatsappId').limit(20);
+    if (type === 'all' || type === 'predictions') results.predictions = await Prediction.find({ $or: [{ homeTeam: regex }, { awayTeam: regex }, { league: regex }] }).sort({ createdAt: -1 }).limit(20);
+    res.json({ success: true, results });
+  } catch (e) { res.status(500).json({ success: false }); }
+});
+
+router.post('/backup', async (req, res) => {
+  try { const backup = require('../database/backup'); await backup(); res.json({ success: true, message: 'Backup started' }); } catch (e) { res.status(500).json({ success: false, message: e.message }); }
+});
+
+router.post('/restore', async (req, res) => {
+  try { const restore = require('../database/restore'); await restore(req.body.filename); res.json({ success: true, message: 'Restore started' }); } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 module.exports = router;
