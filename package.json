@@ -1,6 +1,6 @@
 {
   "name": "victory-predict",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Victory Predict - Premium WhatsApp Football Prediction Bot with AI",
   "main": "server/index.js",
   "scripts": {
@@ -12,12 +12,11 @@
     "backup": "node server/database/backup.js",
     "restore": "node server/database/restore.js"
   },
-  "keywords": ["whatsapp-bot","football-prediction","ai","baileys","victory-predict"],
+  "keywords": ["whatsapp-bot","football-prediction","ai","baileys","victory-predict","pairing-code"],
   "author": "KING DEV",
   "license": "MIT",
   "dependencies": {
-    "@adiwajshing/baileys": "^6.6.0",
-    "@adiwajshing/keyed-db": "^0.2.4",
+    "@whiskeysockets/baileys": "^7.0.0-rc.14",
     "axios": "^1.6.7",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
