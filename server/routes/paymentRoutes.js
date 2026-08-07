@@ -3,7 +3,6 @@ const router = express.Router();
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const paymentService = require('../services/paymentService');
-const notificationService = require('../services/notificationService');
 const { protect, adminOnly } = require('../middleware/auth');
 const logger = require('../utils/logger');
 
@@ -21,18 +20,35 @@ router.get('/revenue', adminOnly, async (req, res) => {
   try { const stats = await paymentService.getRevenueStats(req.query.period); res.json({ success: true, stats }); } catch (e) { res.status(500).json({ success: false }); }
 });
 
+// ✅ APPROVE + send WhatsApp notification to user
 router.put('/:id/approve', adminOnly, async (req, res) => {
   try {
     const result = await paymentService.approvePayment(req.params.id, req.user._id, req.body.note);
-    try { const whatsappBot = require('../bot/whatsappBot'); if (whatsappBot.isConnected && result.user && result.user.whatsappId) { const { t } = require('../services/languageService'); await whatsappBot.sendMessage(result.user.whatsappId, { text: t('payment_approved', result.user.language) }); logger.info('WhatsApp notification sent to ' + result.user.whatsappId); } } catch (e) {}
-    res.json({ success: true, message: 'Payment approved and user notified via WhatsApp', ...result });
+    // ✅ Send WhatsApp notification to user
+    try {
+      const whatsappBot = require('../bot/whatsappBot');
+      if (whatsappBot.isConnected && result.payment && result.payment.whatsappId) {
+        const { t } = require('../services/languageService');
+        const msg = '╔══ VIP AKTIVE ✅ ══════════╗\n║    PEMAN APWOUVE! 🎉     ║\n╚══════════════════════════╝\n\n✅ *VIP ou aktive!*\n\n📅 Ekspire: ' + new Date(result.expiryDate).toLocaleDateString() + '\n🏅 Plan: ' + (result.payment.plan === 'monthly' ? '💎 Monthly' : '⭐ Weekly') + '\n\n🔓 *Kounye a ou gen aksè a:*\n🔮 20 prediksyon/ jou\n📊 Correct Score EGZAK\n🖼️ Bèl flyer prediksyon\n📈 Estatistik avanse\n\n💎 *Byenveni nan VIP!* 🇭🇹';
+        await whatsappBot.sendMessage(result.payment.whatsappId, { text: msg });
+        logger.info('WhatsApp VIP notification sent to ' + result.payment.whatsappId);
+      }
+    } catch (e) {}
+    res.json({ success: true, message: '✅ Peman apwouve — notifikasyon voye sou WhatsApp itilizatè a', ...result });
   } catch (e) { res.status(400).json({ success: false, message: e.message }); }
 });
 
+// ✅ REJECT + send WhatsApp notification
 router.put('/:id/reject', adminOnly, async (req, res) => {
   try {
     const payment = await paymentService.rejectPayment(req.params.id, req.user._id, req.body.note);
-    try { const whatsappBot = require('../bot/whatsappBot'); const user = await User.findById(payment.userId); if (whatsappBot.isConnected && user && user.whatsappId) { const { t } = require('../services/languageService'); await whatsappBot.sendMessage(user.whatsappId, { text: t('payment_rejected', user.language) }); } } catch (e) {}
+    try {
+      const whatsappBot = require('../bot/whatsappBot');
+      if (whatsappBot.isConnected && payment && payment.whatsappId) {
+        const msg = '╔══ PEMAN REJETE ❌ ═════════╗\n║    PEMAN PA VALIDE      ║\n╚══════════════════════════╝\n\n❌ *Peman ou an pa valide.*\n\n💡 Tanpri eseye anko:\n📅 .weekly — 1,500 HTG\n📅 .monthly — 4,500 HTG\n\n📸 Voye yon lòt screenshot ki pi klè.';
+        await whatsappBot.sendMessage(payment.whatsappId, { text: msg });
+      }
+    } catch (e) {}
     res.json({ success: true, payment });
   } catch (e) { res.status(400).json({ success: false, message: e.message }); }
 });
