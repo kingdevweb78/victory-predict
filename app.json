@@ -1,0 +1,18 @@
+{
+  "name": "Victory Predict",
+  "description": "⚽ Premium WhatsApp Football Prediction Bot with AI | 🇭🇹",
+  "repository": "https://github.com/kingdevweb78/victory-predict",
+  "keywords": ["whatsapp-bot", "football-prediction", "ai", "baileys"],
+  "env": {
+    "ADMIN_EMAIL": { "value": "admin@victorypredict.com" },
+    "ADMIN_PASSWORD": { "value": "Admin@123!" },
+    "GROQ_API_KEY": { "required": true },
+    "USE_PAIRING_CODE": { "value": "true" },
+    "PAIRING_PHONE_NUMBER": { "required": false },
+    "ADMIN_NUMBER": { "required": false },
+    "NODE_ENV": { "value": "production" },
+    "START_BOT": { "value": "true" },
+    "SEED_DB": { "value": "true" }
+  },
+  "buildpacks": [{ "url": "heroku/nodejs" }]
+}
