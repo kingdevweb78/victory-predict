@@ -1,0 +1,52 @@
+import React, { useEffect, useState } from 'react';
+import { adminAPI } from '../utils/api';
+import { Users, Crown, CreditCard, Target, TrendingUp, Activity, Zap } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+
+const chartData = [{ name: 'Lun', users: 4, pred: 12 },{ name: 'Mar', users: 7, pred: 19 },{ name: 'Mer', users: 5, pred: 15 },{ name: 'Jeu', users: 9, pred: 25 },{ name: 'Ven', users: 12, pred: 30 },{ name: 'Sam', users: 8, pred: 22 },{ name: 'Dim', users: 6, pred: 18 }];
+
+export default function Dashboard() {
+  const [stats, setStats] = useState({ totalUsers:0, vipUsers:0, pendingPayments:0, totalPredictions:0, todayPredictions:0, groups:0, revenue:0 });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { adminAPI.stats().then(({ data }) => { if (data.success) setStats(s => ({ ...s, ...data.stats })); }).catch(() => {}).finally(() => setLoading(false)); }, []);
+
+  const cards = [
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: '#3b82f6', trend: '+12%' },
+    { label: 'VIP Members', value: stats.vipUsers, icon: Crown, color: '#f59e0b', trend: '+5%' },
+    { label: 'Pending Payments', value: stats.pendingPayments, icon: CreditCard, color: '#ef4444', trend: '3' },
+    { label: 'Today Predictions', value: stats.todayPredictions, icon: Target, color: '#8b5cf6', trend: '24' },
+    { label: 'Revenue', value: 'HTG ' + (stats.revenue || 0).toLocaleString(), icon: TrendingUp, color: '#10b981', trend: '+18%' },
+    { label: 'Active Groups', value: stats.groups, icon: Activity, color: '#ec4899', trend: '8' },
+  ];
+
+  return (
+    <div className="animate-slide-up">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:28, flexWrap:'wrap', gap:12 }}>
+        <div><h2 style={{ fontSize:24, fontWeight:700 }}>📊 Dashboard</h2><p style={{ color:'var(--text-muted)', fontSize:13, marginTop:4 }}>Byenveni, KING DEV! Men rezime a.</p></div>
+        <span className="badge badge-green" style={{ padding:'8px 16px' }}><Zap size={12} /> AI Active</span>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:16, marginBottom:28 }}>
+        {cards.map(({ label, value, icon: Icon, color, trend }, i) => (
+          <div key={i} className="stat-card" style={{ animationDelay:i*0.1+'s' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
+              <span style={{ fontSize:12, color:'var(--text-muted)', fontWeight:500 }}>{label}</span>
+              <div style={{ width:38, height:38, borderRadius:10, background:color+'20', display:'flex', alignItems:'center', justifyContent:'center' }}><Icon size={18} color={color} /></div>
+            </div>
+            <div style={{ fontSize:28, fontWeight:800, color:'var(--text-primary)', marginBottom:4 }}>{loading ? '...' : value}</div>
+            <div style={{ fontSize:11, color, fontWeight:600, display:'flex', alignItems:'center', gap:4 }}><TrendingUp size={12} /> {trend}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(400px, 1fr))', gap:20 }}>
+        <div className="glass-card" style={{ padding:20 }}>
+          <h3 style={{ fontSize:16, fontWeight:600, marginBottom:16 }}>📈 Users This Week</h3>
+          <ResponsiveContainer width="100%" height={240}><AreaChart data={chartData}><defs><linearGradient id="ug" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a"/><XAxis dataKey="name" stroke="#737373" fontSize={11}/><YAxis stroke="#737373" fontSize={11}/><Tooltip contentStyle={{ background:'#1a1a1a', border:'1px solid #2a2a2a', borderRadius:12, color:'#f5f5f5' }}/><Area type="monotone" dataKey="users" stroke="#3b82f6" fill="url(#ug)" strokeWidth={2}/></AreaChart></ResponsiveContainer>
+        </div>
+        <div className="glass-card" style={{ padding:20 }}>
+          <h3 style={{ fontSize:16, fontWeight:600, marginBottom:16 }}>🎯 Predictions Per Day</h3>
+          <ResponsiveContainer width="100%" height={240}><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a"/><XAxis dataKey="name" stroke="#737373" fontSize={11}/><YAxis stroke="#737373" fontSize={11}/><Tooltip contentStyle={{ background:'#1a1a1a', border:'1px solid #2a2a2a', borderRadius:12, color:'#f5f5f5' }}/><Bar dataKey="pred" fill="url(#pg)" radius={[8,8,0,0]}/><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981"/><stop offset="95%" stopColor="#059669"/></linearGradient></defs></BarChart></ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
