@@ -1,0 +1,38 @@
+import React, { useEffect, useState } from 'react';
+import { settingsAPI, adminAPI } from '../utils/api';
+import { Settings as SettingsIcon, Database, Download, Upload, Shield } from 'lucide-react';
+import toast from 'react-hot-toast';
+export default function Settings() {
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { settingsAPI.getAll().then(({ data }) => { if (data.success) setSettings(data.settings || {}); }).finally(() => setLoading(false)); }, []);
+  const handleSave = async (key, value) => { try { await settingsAPI.update(key, value); toast.success('✅ Sove!'); } catch { toast.error('Erè'); } };
+  const handleBackup = async () => { try { await adminAPI.backup(); toast.success('📦 Backup!'); } catch { toast.error('Erè'); } };
+  return (
+    <div className="animate-slide-up">
+      <div style={{ marginBottom:24 }}><h2 style={{ fontSize:24, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><SettingsIcon size={24} color="#a3a3a3" /> Paramet</h2><p style={{ color:'var(--text-muted)', fontSize:13, marginTop:4 }}>Jere konfigirasyon</p></div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(380px, 1fr))', gap:20 }}>
+        <div className="glass-card" style={{ padding:24 }}>
+          <h3 style={{ fontSize:16, fontWeight:600, marginBottom:20 }}>⚙️ Konfigirasyon Bot</h3>
+          {loading ? <p style={{ color:'var(--text-muted)' }}>Chajman...</p> :
+            [{ key:'bot_name', label:'Non Bot', value:settings.bot_name||'Victory Predict' },{ key:'prefix', label:'Prefiks', value:settings.prefix||'.' },{ key:'default_language', label:'Lang', value:settings.default_language||'ht' },{ key:'vip_weekly_price', label:'VIP Semen (HTG)', value:settings.vip_weekly_price||1500 },{ key:'vip_monthly_price', label:'VIP Mwa (HTG)', value:settings.vip_monthly_price||4500 },{ key:'free_daily_predictions', label:'Prediksyon Gratis/Jou', value:settings.free_daily_predictions||3 }].map(({ key, label, value }) => (
+              <div key={key} style={{ marginBottom:14 }}><label style={{ fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', display:'block', marginBottom:4 }}>{label}</label><input defaultValue={value} style={{ width:'100%' }} onBlur={e => handleSave(key, e.target.value)} /></div>
+            ))}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+          <div className="glass-card" style={{ padding:24 }}>
+            <h3 style={{ fontSize:16, fontWeight:600, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}><Database size={18} color="#10b981" /> Backup & Restore</h3>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <button onClick={handleBackup} className="btn-glow" style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center', padding:'10px 0' }}><Download size={16} /> Kreye Backup</button>
+              <button style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center', padding:'10px 0', borderRadius:12, cursor:'pointer', fontWeight:600, background:'transparent', border:'1px solid var(--border-color)', color:'var(--text-secondary)' }}><Upload size={16} /> Restore Backup</button>
+            </div>
+          </div>
+          <div className="glass-card" style={{ padding:24 }}>
+            <h3 style={{ fontSize:16, fontWeight:600, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}><Shield size={18} color="#f59e0b" /> Sekirite</h3>
+            <div style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.8 }}><p>🔐 JWT: <span style={{ fontFamily:'monospace', fontSize:11 }}>••••••</span></p><p>💾 Storage: <span style={{ color:'#34d399', fontWeight:600 }}>JSON File Store</span></p><p>🖥️ Env: <span style={{ color:'#60a5fa', fontWeight:600 }}>Production</span></p><p>🤖 AI: <span style={{ color:'#a78bfa', fontWeight:600 }}>Groq</span></p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
