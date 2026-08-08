@@ -1,3 +1,7 @@
-const pino = require('pino');
-const logger = pino({ transport: { target: 'pino-pretty', options: { colorize: true, translateTime: 'SYS:standard', ignore: 'pid,hostname' } }, level: process.env.LOG_LEVEL || 'info' });
+const logger = {
+  info: (...args) => console.log(new Date().toISOString(), '[INFO]', ...args),
+  error: (...args) => console.error(new Date().toISOString(), '[ERROR]', ...args),
+  warn: (...args) => console.warn(new Date().toISOString(), '[WARN]', ...args),
+  debug: (...args) => process.env.DEBUG && console.log(new Date().toISOString(), '[DEBUG]', ...args),
+};
 module.exports = logger;
