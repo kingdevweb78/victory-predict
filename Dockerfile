@@ -3,9 +3,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ git
 COPY package.json ./
 RUN npm install --legacy-peer-deps --production=false
-COPY client/admin/package.json client/admin/package-lock.json client/admin/
-COPY client/admin/vite.config.js client/admin/index.html client/admin/
-RUN cd client/admin && npm ci --legacy-peer-deps 2>&1 | tail -5
+COPY client/admin/package.json client/admin/vite.config.js client/admin/index.html client/admin/
+RUN cd client/admin && npm install --legacy-peer-deps 2>&1 | tail -5
 COPY . .
 RUN cd client/admin && npx vite build 2>&1 && echo "OK"
 RUN mkdir -p uploads backups logs session data
