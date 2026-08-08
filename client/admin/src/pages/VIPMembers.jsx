@@ -4,28 +4,6 @@ import { Crown, Star, Calendar } from 'lucide-react';
 export default function VIPMembers() {
   const [vips, setVips] = useState([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { usersAPI.getAll().then(({ data }) => { if (data.success) setVips((data.users || []).filter(u => u.isVip)); }).finally(() => setLoading(false)); }, []);
-  return (
-    <div className="animate-slide-up">
-      <div style={{ marginBottom:24 }}><h2 style={{ fontSize:24, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><Crown size={24} color="#f59e0b" /> Manm VIP</h2><p style={{ color:'var(--text-muted)', fontSize:13, marginTop:4 }}>{vips.length} manm VIP</p></div>
-      {loading ? <div style={{ textAlign:'center', padding:60, color:'var(--text-muted)' }}>Chajman...</div> :
-       vips.length === 0 ? <div className="glass-card" style={{ textAlign:'center', padding:60 }}><Crown size={48} color="#f59e0b" style={{ opacity:0.3, marginBottom:16 }} /><h3 style={{ color:'var(--text-secondary)' }}>Pa gen VIP</h3></div> :
-       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:16 }}>
-        {vips.map((v, i) => (
-          <div key={v._id||i} className="glass-card" style={{ padding:24, borderColor:'rgba(245,158,11,0.2)' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:16 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:48, height:48, borderRadius:14, background:'linear-gradient(135deg,#f59e0b,#d97706)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, fontWeight:800, color:'#0a0a0a' }}>{v.name?.[0]||'V'}</div>
-                <div><div style={{ fontWeight:700, fontSize:16 }}>{v.name}</div><div style={{ fontSize:12, color:'var(--text-muted)' }}>{v.whatsappId}</div></div>
-              </div>
-              <span className="badge badge-gold">👑 VIP</span>
-            </div>
-            <div style={{ background:'rgba(245,158,11,0.06)', borderRadius:10, padding:12, display:'flex', justifyContent:'space-around' }}>
-              <div style={{ textAlign:'center' }}><div style={{ fontSize:10, color:'var(--text-muted)', marginBottom:4 }}>Ekspirasyon</div><div style={{ fontSize:13, fontWeight:600, color:'#fbbf24', display:'flex', alignItems:'center', gap:4, justifyContent:'center' }}><Calendar size={12} /> {v.vipExpiry?new Date(v.vipExpiry).toLocaleDateString('fr'):'Permanent'}</div></div>
-              <div style={{ textAlign:'center' }}><div style={{ fontSize:10, color:'var(--text-muted)', marginBottom:4 }}>Nivo</div><div style={{ fontSize:13, fontWeight:600, color:'#fbbf24', display:'flex', alignItems:'center', gap:4, justifyContent:'center' }}><Star size={12} /> {v.vipLevel||'Standard'}</div></div>
-            </div>
-          </div>))}
-       </div>}
-    </div>
-  );
+  useEffect(() => { usersAPI.getAll().then(({ data }) => { if (data.success) setVips((data.users||[]).filter(u=>u.isVip)); }).finally(()=>setLoading(false)); }, []);
+  return (<div className="animate-slide-up"><div style={{ marginBottom:24 }}><h2 style={{ fontSize:24,fontWeight:700,display:'flex',alignItems:'center',gap:8 }}><Crown size={24} color="#f59e0b"/> Manm VIP</h2><p style={{ color:'var(--text-muted)',fontSize:13 }}>{vips.length} manm VIP</p></div>{loading?<div style={{ textAlign:'center',padding:60 }}>Chajman...</div>:vips.length===0?<div className="glass-card" style={{ textAlign:'center',padding:60 }}><Crown size={48} color="#f59e0b" style={{ opacity:0.3 }}/><h3>Pa gen VIP</h3></div>:<div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:16 }}>{vips.map((v,i)=>(<div key={v._id||i} className="glass-card" style={{ padding:24,borderColor:'rgba(245,158,11,0.2)' }}><div style={{ display:'flex',justifyContent:'space-between',marginBottom:16 }}><div style={{ display:'flex',alignItems:'center',gap:12 }}><div style={{ width:48,height:48,borderRadius:14,background:'linear-gradient(135deg,#f59e0b,#d97706)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,fontWeight:800,color:'#0a0a0a' }}>{v.name?.[0]||'V'}</div><div><div style={{ fontWeight:700 }}>{v.name}</div><div style={{ fontSize:12,color:'var(--text-muted)' }}>{v.whatsappId}</div></div></div><span className="badge badge-gold">👑 VIP</span></div><div style={{ background:'rgba(245,158,11,0.06)',borderRadius:10,padding:12,display:'flex',justifyContent:'space-around' }}><div style={{ textAlign:'center' }}><div style={{ fontSize:10,color:'var(--text-muted)' }}>Ekspirasyon</div><div style={{ fontSize:13,fontWeight:600,color:'#fbbf24',display:'flex',alignItems:'center',gap:4,justifyContent:'center' }}><Calendar size={12}/> {v.vipExpiry?new Date(v.vipExpiry).toLocaleDateString('fr'):'Permanent'}</div></div><div style={{ textAlign:'center' }}><div style={{ fontSize:10,color:'var(--text-muted)' }}>Nivo</div><div style={{ fontSize:13,fontWeight:600,color:'#fbbf24',display:'flex',alignItems:'center',gap:4,justifyContent:'center' }}><Star size={12}/> {v.vipLevel||'Standard'}</div></div></div></div>))}</div>}</div>);
 }

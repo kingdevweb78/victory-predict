@@ -6,34 +6,9 @@ export default function Payments() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const fetchPayments = () => { paymentsAPI.getAll(filter!=='all'?{status:filter}:{}).then(({ data }) => { if (data.success) setPayments(data.payments || []); }).catch(() => {}).finally(() => setLoading(false)); };
-  useEffect(() => { fetchPayments(); }, [filter]);
-  const handleAction = async (id, action) => { try { const fn = action==='approve'?paymentsAPI.approve:paymentsAPI.reject; await fn(id); toast.success(action==='approve'?'Apwouve! ✅':'Rejete'); fetchPayments(); } catch { toast.error('Erè'); } };
-
-  return (
-    <div className="animate-slide-up">
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24, flexWrap:'wrap', gap:12 }}>
-        <div><h2 style={{ fontSize:24, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><DollarSign size={24} color="#10b981" /> Paiements</h2><p style={{ color:'var(--text-muted)', fontSize:13, marginTop:4 }}>{payments.length} tranzaksyon</p></div>
-        <div style={{ display:'flex', gap:8 }}>{['all','pending','approved','rejected'].map(f => <button key={f} onClick={() => setFilter(f)} style={{ padding:'8px 16px', borderRadius:20, fontSize:12, fontWeight:600, border:'1px solid', cursor:'pointer', background:filter===f?'rgba(16,185,129,0.12)':'transparent', borderColor:filter===f?'rgba(16,185,129,0.3)':'var(--border-color)', color:filter===f?'#34d399':'var(--text-secondary)' }}>{f==='all'?'Tout':f}</button>)}</div>
-      </div>
-      <div className="glass-card" style={{ overflow:'hidden' }}>
-        {loading ? <div style={{ textAlign:'center', padding:40, color:'var(--text-muted)' }}>Chajman...</div> :
-         payments.length===0 ? <div style={{ textAlign:'center', padding:60 }}><DollarSign size={48} color="var(--text-muted)" style={{ opacity:0.3 }} /><h3 style={{ color:'var(--text-secondary)' }}>Pa gen peman</h3></div> :
-         <table className="data-table"><thead><tr><th>Itilizate</th><th>Montan</th><th>Metod</th><th>Tip</th><th>Status</th><th>Dat</th><th>Aksyon</th></tr></thead>
-          <tbody>{payments.map((p, i) => {
-            const statusStyles = { approved:{ bg:'rgba(16,185,129,0.12)', color:'#34d399', icon:<CheckCircle size={12} /> }, rejected:{ bg:'rgba(248,113,113,0.12)', color:'#f87171', icon:<XCircle size={12} /> }, pending:{ bg:'rgba(245,158,11,0.12)', color:'#fbbf24', icon:<Clock size={12} /> } };
-            const s = statusStyles[p.status] || statusStyles.pending;
-            return <tr key={p._id||i}>
-              <td><div style={{ fontWeight:600 }}>{p.userName||'Unknown'}</div></td>
-              <td style={{ fontWeight:700, color:'#34d399' }}>HTG {(p.amount||0).toLocaleString()}</td>
-              <td><span className="badge badge-blue">{p.method||'N/A'}</span></td>
-              <td><span className="badge badge-green">{p.type==='vip'?'👑 VIP':p.type||'N/A'}</span></td>
-              <td><span className="badge" style={{ background:s.bg, color:s.color, gap:4 }}>{s.icon} {p.status}</span></td>
-              <td style={{ fontSize:12, color:'var(--text-muted)' }}>{p.createdAt?new Date(p.createdAt).toLocaleDateString('fr'):'N/A'}</td>
-              <td>{p.status==='pending'?<div style={{ display:'flex', gap:6 }}><button className="btn-glow" onClick={() => handleAction(p._id,'approve')} style={{ padding:'6px 12px', fontSize:12, borderRadius:8 }}>👍</button><button onClick={() => handleAction(p._id,'reject')} style={{ padding:'6px 12px', fontSize:12, borderRadius:8, cursor:'pointer', background:'rgba(248,113,113,0.1)', border:'1px solid rgba(248,113,113,0.3)', color:'#fca5a5', fontWeight:600 }}>👎</button></div>:<span style={{ fontSize:11, color:'var(--text-muted)' }}>—</span>}</td>
-            </tr>})}
-          </tbody></table>}
-      </div>
-    </div>
-  );
+  const fetch = () => { paymentsAPI.getAll(filter!=='all'?{status:filter}:{}).then(({ data }) => { if (data.success) setPayments(data.payments||[]); }).catch(()=>{}).finally(()=>setLoading(false)); };
+  useEffect(() => { fetch(); }, [filter]);
+  const handleAction = async (id, action) => { try { const fn = action==='approve'?paymentsAPI.approve:paymentsAPI.reject; await fn(id); toast.success(action==='approve'?'Apwouve!':'Rejete'); fetch(); } catch { toast.error('Ere'); } };
+  const statusStyles = { approved:{ bg:'rgba(16,185,129,0.12)',color:'#34d399',icon:<CheckCircle size={12}/> }, rejected:{ bg:'rgba(248,113,113,0.12)',color:'#f87171',icon:<XCircle size={12}/> }, pending:{ bg:'rgba(245,158,11,0.12)',color:'#fbbf24',icon:<Clock size={12}/> } };
+  return (<div className="animate-slide-up"><div style={{ display:'flex',justifyContent:'space-between',marginBottom:24 }}><div><h2 style={{ fontSize:24,fontWeight:700,display:'flex',alignItems:'center',gap:8 }}><DollarSign size={24} color="#10b981"/> Paiements</h2><p style={{ color:'var(--text-muted)',fontSize:13 }}>{payments.length} tranzaksyon</p></div><div style={{ display:'flex',gap:8 }}>{['all','pending','approved','rejected'].map(f=><button key={f} onClick={()=>setFilter(f)} style={{ padding:'8px 16px',borderRadius:20,fontSize:12,fontWeight:600,border:'1px solid',cursor:'pointer',background:filter===f?'rgba(16,185,129,0.12)':'transparent',borderColor:filter===f?'rgba(16,185,129,0.3)':'var(--border-color)',color:filter===f?'#34d399':'var(--text-secondary)' }}>{f==='all'?'Tout':f}</button>)}</div></div><div className="glass-card" style={{ overflow:'hidden' }}>{loading?<div style={{ textAlign:'center',padding:40 }}>Chajman...</div>:payments.length===0?<div style={{ textAlign:'center',padding:60 }}><DollarSign size={48} color="var(--text-muted)" style={{ opacity:0.3 }}/><h3>Pa gen peman</h3></div>:<table className="data-table"><thead><tr><th>Itilizate</th><th>Montan</th><th>Status</th><th>Dat</th><th>Aksyon</th></tr></thead><tbody>{payments.map((p,i)=>{ const s = statusStyles[p.status] || statusStyles.pending; return <tr key={p._id||i}><td><div style={{ fontWeight:600 }}>{p.userName||'Unknown'}</div></td><td style={{ fontWeight:700,color:'#34d399' }}>HTG {(p.amount||0).toLocaleString()}</td><td><span className="badge" style={{ background:s.bg,color:s.color,gap:4 }}>{s.icon} {p.status}</span></td><td style={{ fontSize:12,color:'var(--text-muted)' }}>{p.createdAt?new Date(p.createdAt).toLocaleDateString('fr'):'N/A'}</td><td>{p.status==='pending'?<div style={{ display:'flex',gap:6 }}><button className="btn-glow" onClick={()=>handleAction(p._id,'approve')} style={{ padding:'6px 12px',fontSize:12 }}>👍</button><button onClick={()=>handleAction(p._id,'reject')} style={{ padding:'6px 12px',fontSize:12,borderRadius:8,background:'rgba(248,113,113,0.1)',border:'1px solid rgba(248,113,113,0.3)',color:'#fca5a5',fontWeight:600 }}>👎</button></div>:<span style={{ fontSize:11,color:'var(--text-muted)' }}>—</span>}</td></tr>})}</tbody></table>}</div></div>);
 }
