@@ -1,23 +1,10 @@
-const mongoose = require('mongoose');
-
-const groupSchema = new mongoose.Schema({
-  groupId: { type: String, required: true, unique: true },
-  name: { type: String, default: 'Unknown Group' },
-  description: { type: String, default: '' },
-  logoUrl: { type: String, default: null },
-  isEnabled: { type: Boolean, default: true },
-  settings: { deleteLinks: { type: Boolean, default: true }, deleteSpam: { type: Boolean, default: true }, antiFlood: { type: Boolean, default: true }, antiBadWords: { type: Boolean, default: true }, adminOnlyCommands: { type: Boolean, default: false }, autoModeration: { type: Boolean, default: true }, autoLogs: { type: Boolean, default: true }, welcomeMessage: { type: Boolean, default: true }, goodbyeMessage: { type: Boolean, default: true } },
-  messages: { welcome: { type: String, default: 'Byenveni nan {group}!' }, goodbye: { type: String, default: 'Orevwa! Bonn chans!' } },
-  badWords: [{ type: String }],
-  adminIds: [{ type: String }],
-  memberCount: { type: Number, default: 0 },
-  totalMessages: { type: Number, default: 0 },
-  commandCount: { type: Number, default: 0 },
-  addedBy: { type: String, default: null },
-  language: { type: String, enum: ['ht', 'en', 'fr'], default: 'ht' },
-  lastMetadataUpdate: { type: Date, default: null },
-  tags: [{ type: String }],
-  isVerified: { type: Boolean, default: false },
-}, { timestamps: true });
-
-module.exports = mongoose.model('Group', groupSchema);
+const {getStore}=require('../database/store'); const store=getStore('groups');
+class Group {
+  constructor(data){Object.assign(this,data);}
+  async save(){const e=store.findById(this._id);return e?store.update(this._id,this):store.create(this);}
+  static findById(id){const g=store.findById(id);return g?new Group(g):null;}
+  static find(q={}){return store.find(q).map(g=>new Group(g));}
+  static findOne(q){const g=store.findOne(q);return g?new Group(g):null;}
+  static create(d){return new Group(store.create(d));}
+}
+module.exports=Group;

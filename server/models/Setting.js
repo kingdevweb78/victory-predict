@@ -1,10 +1,11 @@
-const mongoose = require('mongoose');
-
-const settingSchema = new mongoose.Schema({
-  key: { type: String, required: true, unique: true },
-  value: { type: mongoose.Schema.Types.Mixed, required: true },
-  description: { type: String, default: '' },
-  category: { type: String, enum: ['general', 'bot', 'payment', 'prediction', 'notification', 'security'], default: 'general' }
-}, { timestamps: true });
-
-module.exports = mongoose.model('Setting', settingSchema);
+const {getStore}=require('../database/store'); const store=getStore('settings');
+class Setting {
+  constructor(data){Object.assign(this,data);}
+  async save(){const e=store.findById(this._id);return e?store.update(this._id,this):store.create(this);}
+  static findById(id){const s=store.findById(id);return s?new Setting(s):null;}
+  static find(q={}){return store.find(q).map(s=>new Setting(s));}
+  static findOne(q){const s=store.findOne(q);return s?new Setting(s):null;}
+  static create(d){return new Setting(store.create(d));}
+  static findByIdAndUpdate(id,u){const r=store.update(id,u);return r?new Setting(r):null;}
+}
+module.exports=Setting;
