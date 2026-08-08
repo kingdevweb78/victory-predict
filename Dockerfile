@@ -6,6 +6,8 @@ RUN npm install --legacy-peer-deps --production=false
 COPY client/admin/package.json client/admin/vite.config.js client/admin/index.html client/admin/
 RUN cd client/admin && npm install --legacy-peer-deps 2>&1 | tail -5
 COPY . .
+# Remove old .js duplicates (keep only .jsx)
+RUN find client/admin/src -name "*.js" ! -path "*/utils/*" -delete 2>/dev/null; echo "Cleaned old .js"
 RUN cd client/admin && npx vite build 2>&1 && echo "OK"
 RUN mkdir -p uploads backups logs session data
 ENV PORT=10000
