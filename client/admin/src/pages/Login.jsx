@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Shield, Zap } from 'lucide-react';
 export default function Login() {
-  const [email, setEmail] = useState('admin@victorypredict.com');
+  const [email, setEmail] = useState('kfixed91@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
