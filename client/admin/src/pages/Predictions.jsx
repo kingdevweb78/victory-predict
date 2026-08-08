@@ -1,0 +1,61 @@
+import React, { useEffect, useState } from 'react';
+import { predictionsAPI } from '../utils/api';
+import { Target, Plus, Trash2, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
+export default function Predictions() {
+  const [preds, setPreds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ homeTeam:'', awayTeam:'', league:'', winner:'', correctScore:'', confidence:70, matchDate:'' });
+  const fetch = () => { predictionsAPI.getAll().then(({ data }) => { if (data.success) setPreds(data.predictions || []); }).catch(() => {}).finally(() => setLoading(false)); };
+  useEffect(() => { fetch(); }, []);
+  const handleSubmit = async (e) => { e.preventDefault(); try { await predictionsAPI.create(form); toast.success('Kreye! 🎯'); setShowForm(false); setForm({ homeTeam:'', awayTeam:'', league:'', winner:'', correctScore:'', confidence:70, matchDate:'' }); fetch(); } catch { toast.error('Erè'); } };
+  const handleDelete = async (id) => { if (!window.confirm('Eske w seten?')) return; try { await predictionsAPI.delete(id); toast.success('Efase!'); fetch(); } catch { toast.error('Erè'); } };
+
+  return (
+    <div className="animate-slide-up">
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24, flexWrap:'wrap', gap:12 }}>
+        <div><h2 style={{ fontSize:24, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}><Target size={24} color="#8b5cf6" /> Prediksyon</h2><p style={{ color:'var(--text-muted)', fontSize:13, marginTop:4 }}>{preds.length} prediksyon</p></div>
+        <button className="btn-glow" onClick={() => setShowForm(!showForm)} style={{ display:'flex', alignItems:'center', gap:8 }}><Plus size={16} /> Nouvo</button>
+      </div>
+      {showForm && (
+        <div className="glass-card" style={{ padding:24, marginBottom:20 }}>
+          <h3 style={{ marginBottom:16, fontSize:16, fontWeight:600 }}>📝 Kreye Prediksyon</h3>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:12 }}>
+              <input placeholder="Ekip Lakay" value={form.homeTeam} onChange={e => setForm({...form, homeTeam:e.target.value})} required />
+              <input placeholder="Ekip Vizite" value={form.awayTeam} onChange={e => setForm({...form, awayTeam:e.target.value})} required />
+              <input placeholder="Lig" value={form.league} onChange={e => setForm({...form, league:e.target.value})} required />
+              <input placeholder="Gayan" value={form.winner} onChange={e => setForm({...form, winner:e.target.value})} />
+              <input placeholder="Score (2-1)" value={form.correctScore} onChange={e => setForm({...form, correctScore:e.target.value})} />
+              <input type="number" placeholder="Konfyans %" value={form.confidence} onChange={e => setForm({...form, confidence:Number(e.target.value)})} />
+              <input type="datetime-local" value={form.matchDate} onChange={e => setForm({...form, matchDate:e.target.value})} />
+            </div>
+            <div style={{ marginTop:16, display:'flex', gap:12 }}>
+              <button type="submit" className="btn-glow" style={{ display:'flex', alignItems:'center', gap:6 }}><Zap size={14} /> Kreye</button>
+              <button type="button" onClick={() => setShowForm(false)} style={{ padding:'10px 20px', borderRadius:12, cursor:'pointer', background:'transparent', border:'1px solid var(--border-color)', color:'var(--text-secondary)' }}>Anile</button>
+            </div>
+          </form>
+        </div>
+      )}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:16 }}>
+        {loading ? <div style={{ textAlign:'center', padding:40, color:'var(--text-muted)', gridColumn:'1/-1' }}>Chajman...</div> :
+         preds.length===0 ? <div className="glass-card" style={{ textAlign:'center', padding:60, gridColumn:'1/-1' }}><Target size={48} color="var(--text-muted)" style={{ opacity:0.3 }} /><h3 style={{ color:'var(--text-secondary)' }}>Pa gen prediksyon</h3></div> :
+         preds.map((p, i) => (
+          <div key={p._id||i} className="glass-card" style={{ padding:20 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:12 }}><span className="badge badge-blue">{p.league||'N/A'}</span><button onClick={() => handleDelete(p._id)} style={{ background:'none', border:'none', color:'#f87171', cursor:'pointer', padding:4 }}><Trash2 size={14} /></button></div>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+              <div style={{ flex:1, textAlign:'center' }}><div style={{ fontWeight:700, fontSize:18 }}>{p.homeTeam}</div></div>
+              <div style={{ padding:'6px 12px', borderRadius:8, fontSize:13, fontWeight:700, background:'rgba(16,185,129,0.1)', color:'#34d399' }}>VS</div>
+              <div style={{ flex:1, textAlign:'center' }}><div style={{ fontWeight:700, fontSize:18 }}>{p.awayTeam}</div></div>
+            </div>
+            <div style={{ background:'rgba(139,92,246,0.06)', borderRadius:10, padding:12, display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+              <div><span style={{ fontSize:11, color:'var(--text-muted)' }}>Gayan:</span> <span style={{ fontWeight:600, color:'#c4b5fd' }}>{p.winner||'N/A'}</span></div>
+              <div><span style={{ fontSize:11, color:'var(--text-muted)' }}>Score:</span> <span style={{ fontWeight:600, color:'#fbbf24' }}>{p.correctScore||'N/A'}</span></div>
+              <div><span style={{ fontSize:11, color:'var(--text-muted)' }}>Konfyans:</span> <span style={{ fontWeight:600, color:p.confidence>=70?'#34d399':p.confidence>=50?'#fbbf24':'#f87171' }}>{p.confidence||0}%</span></div>
+            </div>
+          </div>))}
+      </div>
+    </div>
+  );
+}
