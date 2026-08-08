@@ -1,16 +1,10 @@
-const mongoose = require('mongoose');
+const { getStore } = require('../database/store');
+const store = getStore('logs');
 
-const logSchema = new mongoose.Schema({
-  level: { type: String, enum: ['info', 'warning', 'error', 'debug', 'success'], default: 'info' },
-  category: { type: String, enum: ['system', 'bot', 'payment', 'admin', 'group', 'prediction', 'api', 'user'], required: true },
-  action: { type: String, required: true },
-  description: { type: String, required: true },
-  userId: { type: String, default: null },
-  metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
-  ip: { type: String, default: null }
-}, { timestamps: true });
-
-logSchema.index({ category: 1, createdAt: -1 });
-logSchema.index({ level: 1, createdAt: -1 });
-
-module.exports = mongoose.model('Log', logSchema);
+class Log {
+  constructor(data) { Object.assign(this, data); }
+  static create(data) { return new Log(store.create({ ...data, timestamp: new Date().toISOString() })); }
+  static find(q) { return store.find(q).map(l => new Log(l)); }
+  static countDocuments(q) { return store.countDocuments(q); }
+}
+module.exports = Log;
