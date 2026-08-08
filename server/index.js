@@ -10,8 +10,8 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
+const PORT = process.env.PORT || config.port || 10000;
 
-// Security & parsing
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, contentSecurityPolicy: false }));
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
@@ -21,10 +21,8 @@ if (config.nodeEnv === 'development') app.use(morgan('dev'));
 app.use('/api/', apiLimiter);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check
-app.get('/health', (req, res) => res.json({ success: true, message: '🏆 Victory Predict — Heroku Ready!', timestamp: new Date().toISOString(), storage: 'JSON File Store' }));
+app.get('/health', (req, res) => res.json({ success: true, message: '🏆 Victory Predict — Render Ready!', timestamp: new Date().toISOString(), storage: 'JSON File Store' }));
 
-// API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
@@ -34,7 +32,6 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/settings', require('./routes/settingRoutes'));
 app.use('/webhook', require('./webhook/webhookHandler'));
 
-// Admin Dashboard
 const adminPath = path.join(__dirname, '../client/admin/build');
 if (require('fs').existsSync(path.join(adminPath, 'index.html'))) {
   app.use('/admin', express.static(adminPath));
@@ -48,5 +45,11 @@ if (require('fs').existsSync(path.join(adminPath, 'index.html'))) {
 app.get('/', (req, res) => res.json({ success: true, name: '🏆 Victory Predict', version: '2.2.0', storage: 'JSON File Store' }));
 app.use(notFound);
 app.use(errorHandler);
+
+app.listen(PORT, () => {
+  logger.info('Victory Predict v2.2.0 — Render Ready!');
+  logger.info('Storage: JSON File Store (No MongoDB!)');
+  logger.info('Port: ' + PORT);
+});
 
 module.exports = app;
